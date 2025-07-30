@@ -1,4 +1,4 @@
-import 'package:fitness_app/full%20body/testtts_screen.dart';
+import 'package:fitness_app/screens/main%20screens/navbar.dart';
 import 'package:fitness_app/screens/splash/splash_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SplashScreen(),
+      home: Navbar(),
     );
   }
 }

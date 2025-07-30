@@ -2,22 +2,34 @@ import 'package:fitness_app/full body/exercise_model.dart';
 
 final List<ExerciseModel> warmupExercises = [
   ExerciseModel(
-    name: "Jumping Jacks",
-    filePath: "assets/lottie/jumping_jacks.json",
+    name: "Jumping Jack",
+    filePath: "assets/animation/Jumping Jack.json",
     time: "00:30",
     isAnimation: true,
   ),
   ExerciseModel(
-    name: "Arm Circles",
-    filePath: "assets/lottie/arm_circles.json",
-    time: "00:20",
+    name: "Abs Crunches",
+    filePath: "assets/animation/push up.json",
+    time: "x16",
     isAnimation: true,
   ),
   ExerciseModel(
-    name: "Leg Swings",
-    filePath: "assets/images/leg_swing.png",
-    time: "16 reps",
-    isAnimation: false,
+    name: "abs circles ",
+    filePath: "assets/animation/Seated abs circles.json",
+    time: "00:30",
+    isAnimation: true,
+  ),
+  ExerciseModel(
+    name: " Twist",
+    filePath: "assets/animation/exercise 3.json",
+    time: "x16",
+    isAnimation: true,
+  ),
+  ExerciseModel(
+    name: "Russian ",
+    filePath: "assets/animation/exercise 4.json",
+    time: "x14",
+    isAnimation: true,
   ),
 ];
 

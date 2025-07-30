@@ -4,14 +4,12 @@ import 'package:fitness_app/screens/exercise%20details/today%20plan/cooldown_dat
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-import 'warmup_data.dart';
-
 class CoolDownScreen extends StatelessWidget {
   const CoolDownScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<ExerciseModel> exercises = warmupExercises;
+    final List<ExerciseModel> exercises = cooldownExercises;
     final String timeText = cooldownData["time"];
     final String exerciseCountText = cooldownData["exerciseCount"];
 

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/full%20body/exercise_model.dart';
 import 'package:fitness_app/screens/exercise%20details/today%20plan/cool_down_screen.dart';
 import 'package:fitness_app/screens/exercise%20details/today%20plan/full_body_exercise_screen.dart';
 import 'package:fitness_app/screens/exercise%20details/today%20plan/warm_up_screen.dart';
@@ -436,18 +437,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ...workouts.map((workout) {
           return GestureDetector(
             onTap: () {
-              String title = workout['title'] as String;
-              List<Map<String, String>> exercises = exerciseData[title] ?? [];
-
+              String title = workout['title'];
+              List<ExerciseModel> exercises = exerciseData[title] ?? [];
               Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ExerciseListScreen(
-                    title: title,
-                    exercises: exercises,
-                  ),
-                ),
-              );
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ExerciseListScreen(
+                      exercises: exercises,
+                      title: title,
+                      bannerImage: workout['image'],
+                    ),
+                  ));
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 16),
