@@ -63,51 +63,65 @@ class CoolDownScreen extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final exercise = exercises[index];
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ListTile(
-                            leading: exercise.isAnimation
-                                ? SizedBox(
-                                    width: 70,
-                                    height: 70,
-                                    child: Lottie.asset(
-                                      exercise.filePath,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: 70,
-                                    height: 70,
-                                    child: Image.asset(
-                                      exercise.filePath,
-                                    ),
-                                  ),
-                            title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  exercise.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  exercise.time,
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ExercisePlayerScreen(
+                              exercises: [exercise], // Only one exercise
+                              startIndex: 0,
+                              isSingle: true,
                             ),
                           ),
-                        ),
-                        const Divider(
-                          thickness: 1,
-                          color: Colors.grey,
-                          indent: 16,
-                          endIndent: 16,
-                        ),
-                      ],
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ListTile(
+                              leading: exercise.isAnimation
+                                  ? SizedBox(
+                                      width: 70,
+                                      height: 70,
+                                      child: Lottie.asset(
+                                        exercise.filePath,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : SizedBox(
+                                      width: 70,
+                                      height: 70,
+                                      child: Image.asset(
+                                        exercise.filePath,
+                                      ),
+                                    ),
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    exercise.name,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    exercise.time,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(
+                            thickness: 1,
+                            color: Colors.grey,
+                            indent: 16,
+                            endIndent: 16,
+                          ),
+                        ],
+                      ),
                     );
                   },
                   childCount: exercises.length,
@@ -130,6 +144,7 @@ class CoolDownScreen extends StatelessWidget {
                     builder: (context) => ExercisePlayerScreen(
                       exercises: exercises,
                       startIndex: 0,
+                      isSingle: true,
                     ),
                   ),
                 );

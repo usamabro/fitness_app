@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
   final String peerId;
-  final String peerEmail;
+  final String peerName;
 
-  ChatScreen({required this.peerId, required this.peerEmail});
+  ChatScreen({required this.peerId, required this.peerName});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -90,7 +90,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.peerEmail)),
+      appBar: AppBar(title: Text(widget.peerName)),
       body: Column(
         children: [
           Expanded(

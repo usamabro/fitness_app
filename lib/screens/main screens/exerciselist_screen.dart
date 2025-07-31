@@ -76,42 +76,56 @@ class ExerciseListScreen extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final exercise = exercises[index];
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: ListTile(
-                            leading: exercise.isAnimation
-                                ? Lottie.asset(
-                                    exercise.filePath,
-                                    width: 70,
-                                    height: 70,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    exercise.filePath,
-                                    width: 70,
-                                    height: 70,
-                                    fit: BoxFit.cover,
-                                  ),
-                            title: Text(
-                              exercise.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              exercise.time,
-                              style: const TextStyle(color: Colors.grey),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ExercisePlayerScreen(
+                              exercises: [exercise], // only one exercise
+                              startIndex: 0,
+                              isSingle: true,
                             ),
                           ),
-                        ),
-                        const Divider(
-                          thickness: 1,
-                          color: Colors.grey,
-                          indent: 16,
-                          endIndent: 16,
-                        ),
-                      ],
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ListTile(
+                              leading: exercise.isAnimation
+                                  ? Lottie.asset(
+                                      exercise.filePath,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(
+                                      exercise.filePath,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                    ),
+                              title: Text(
+                                exercise.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                exercise.time,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ),
+                          const Divider(
+                            thickness: 1,
+                            color: Colors.grey,
+                            indent: 16,
+                            endIndent: 16,
+                          ),
+                        ],
+                      ),
                     );
                   },
                   childCount: exercises.length,
@@ -134,6 +148,7 @@ class ExerciseListScreen extends StatelessWidget {
                     builder: (_) => ExercisePlayerScreen(
                       exercises: exercises,
                       startIndex: 0,
+                      isSingle: true,
                     ),
                   ),
                 );

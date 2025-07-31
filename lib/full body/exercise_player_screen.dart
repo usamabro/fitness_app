@@ -8,11 +8,13 @@ import 'rest_screen.dart';
 class ExercisePlayerScreen extends StatefulWidget {
   final List<ExerciseModel> exercises;
   final int startIndex;
+  final bool isSingle;
 
   const ExercisePlayerScreen({
     super.key,
     required this.exercises,
     required this.startIndex,
+    required this.isSingle,
   });
 
   @override
@@ -49,6 +51,11 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
 
   void goToNextExercise() {
     tts.stop();
+    if (widget.isSingle) {
+      // 👇 If single exercise, just return to previous screen
+      Navigator.pop(context);
+      return;
+    }
 
     if (currentIndex + 1 < widget.exercises.length) {
       Navigator.pushReplacement(

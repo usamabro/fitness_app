@@ -17,9 +17,13 @@ class _NameScreenState extends State<NameScreen> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        String fullName =
+            '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
+                .trim();
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'first_name': _firstNameController.text.trim(),
           'last_name': _lastNameController.text.trim(),
+          'name': fullName, // ✅ Add full name here
         }, SetOptions(merge: true)); // merge to avoid overwriting other data
         // Navigate to next screen
         ScaffoldMessenger.of(context).showSnackBar(

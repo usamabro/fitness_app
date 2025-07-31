@@ -77,12 +77,31 @@ class _SettingScreenState extends State<SettingScreen> {
               icon: Icons.logout,
               title: "Logout",
               onTap: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => SigninScreen()),
-                  (route) => false,
+                final confirmLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Logout"),
+                    content: Text("Are you sure you want to logout?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text("No"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: Text("Yes"),
+                      ),
+                    ],
+                  ),
                 );
+                if (confirmLogout == true) {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => SigninScreen()),
+                    (route) => false,
+                  );
+                }
               },
             ),
             settingsCard(
@@ -91,24 +110,45 @@ class _SettingScreenState extends State<SettingScreen> {
               iconColor: Colors.red,
               textColor: Colors.red,
               onTap: () async {
-                final user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  try {
-                    await user.delete();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => SigninScreen()),
-                      (route) => false,
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Account deleted successfully")),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                final confirmDelete = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Delete Account"),
+                    content: Text(
+                        "Are you sure you want to delete your account?\nAll your data will be deleted."),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text("No"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: Text("Yes"),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmDelete == true) {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    try {
+                      await user.delete();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => SigninScreen()),
+                        (route) => false,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Account deleted successfully")),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
                           content: Text(
-                              "Error: Re-login required to delete account")),
-                    );
+                              "Error: Re-login required to delete account"),
+                        ),
+                      );
+                    }
                   }
                 }
               },

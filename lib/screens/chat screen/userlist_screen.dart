@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/screens/chat%20screen/chat_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class UsersListScreen extends StatefulWidget {
   @override
@@ -38,6 +41,28 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
   String generateChatId(String uid1, String uid2) {
     return (uid1.compareTo(uid2) <= 0) ? '${uid1}_$uid2' : '${uid2}_$uid1';
+  }
+
+  Future<void> _pickAndUploadImage(String userId) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('user_images')
+          .child('$userId.jpg');
+
+      await ref.putFile(File(pickedFile.path));
+      final uploadedUrl = await ref.getDownloadURL();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'imageUrl': uploadedUrl});
+
+      setState(() {});
+    }
   }
 
   @override
@@ -78,19 +103,15 @@ class _UsersListScreenState extends State<UsersListScreen> {
             itemBuilder: (context, index) {
               final user = filteredUsers[index];
               final userData = user.data() as Map<String, dynamic>;
-              final userName = userData['name'];
+              final userName = userData['name'] ?? 'No Name';
               final role = userData['role'] ?? 'user';
+              final imageUrl = userData['imageUrl'];
               final userId = user.id;
               final userEmail = userData['email'] ?? '';
 
               final displayName =
-                  (userName != null && userName.toString().trim().isNotEmpty)
-                      ? userName
-                      : userEmail;
-
-              final subtitleText = role == 'trainer'
-                  ? 'Trainer: $userEmail'
-                  : 'User: $userEmail';
+                  userName.trim().isNotEmpty ? userName : userEmail;
+              final subtitleText = role == 'trainer' ? 'Trainer' : 'User';
 
               final chatId = generateChatId(currentUserId, userId);
 
@@ -108,9 +129,49 @@ class _UsersListScreenState extends State<UsersListScreen> {
                   }
 
                   return ListTile(
-                    leading: Icon(role == 'trainer'
-                        ? Icons.fitness_center
-                        : Icons.person),
+                    leading: GestureDetector(
+                      onTap: () async {
+                        if (userId == currentUserId) {
+                          await _pickAndUploadImage(userId);
+                        }
+                      },
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage:
+                                  imageUrl != null && imageUrl.isNotEmpty
+                                      ? NetworkImage(imageUrl)
+                                      : AssetImage(
+                                          role == 'trainer'
+                                              ? 'assets/images/trainer.png'
+                                              : 'assets/images/users.jpg',
+                                        ) as ImageProvider,
+                            ),
+                            if (userId == currentUserId)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                     title: Text(displayName),
                     subtitle: Text(subtitleText),
                     trailing: unreadCount > 0
@@ -134,7 +195,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) =>
-                              ChatScreen(peerId: userId, peerEmail: userEmail),
+                              ChatScreen(peerId: userId, peerName: userName),
                         ),
                       );
 
@@ -158,7 +219,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
   }
 }
 
-// ✅ Add this function to register new users with default role "user"
+// ✅ Registration helper (unchanged)
 Future<void> registerUser(String name, String email, String password) async {
   try {
     UserCredential userCredential = await FirebaseAuth.instance
@@ -170,7 +231,7 @@ Future<void> registerUser(String name, String email, String password) async {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'name': name,
         'email': email,
-        'role': 'user', // 👈 Default role
+        'role': 'user',
         'createdAt': Timestamp.now(),
       });
     }

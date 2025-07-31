@@ -68,7 +68,8 @@ class _RestScreenState extends State<RestScreen> {
       MaterialPageRoute(
         builder: (_) => ExercisePlayerScreen(
           exercises: widget.exercises,
-          startIndex: widget.currentIndex + 1, // ✅ go to next
+          startIndex: widget.currentIndex + 1,
+          isSingle: false, // ✅ go to next
         ),
       ),
     );

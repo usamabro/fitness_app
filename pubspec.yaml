@@ -40,7 +40,7 @@ dependencies:
   convex_bottom_bar: ^3.2.0
   firebase_messaging: 15.2.9
   flutter_local_notifications: ^17.1.2
-  intl: ^0.18.1
+  intl: ^0.20.2
 
   video_player: ^2.7.0
 
@@ -50,6 +50,9 @@ dependencies:
   cloud_firestore: ^5.6.11
   lottie: ^3.3.1
   flutter_tts: ^3.8.3
+  table_calendar: ^3.2.0
+  image_picker: ^1.1.2
+  firebase_storage: 12.4.9
 
 dev_dependencies:
   flutter_test:
