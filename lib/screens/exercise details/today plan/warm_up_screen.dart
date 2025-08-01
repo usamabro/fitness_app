@@ -72,7 +72,7 @@ class WarmupScreen extends StatelessWidget {
                             builder: (_) => ExercisePlayerScreen(
                               exercises: [exercise], // Only one exercise
                               startIndex: 0,
-                              isSingle: true,
+                              isSingle: false,
                             ),
                           ),
                         );
@@ -144,7 +144,7 @@ class WarmupScreen extends StatelessWidget {
                     builder: (context) => ExercisePlayerScreen(
                       exercises: exercises,
                       startIndex: 0,
-                      isSingle: true,
+                      isSingle: false,
                     ),
                   ),
                 );

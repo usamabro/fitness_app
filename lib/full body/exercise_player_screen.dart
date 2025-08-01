@@ -45,18 +45,20 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     await tts.setSpeechRate(0.5);
     await tts.setVolume(1.0);
     await tts.setPitch(1.0);
-    await tts.awaitSpeakCompletion(true); // ✅ important for some devices
+    await tts.awaitSpeakCompletion(true);
     await tts.speak(message);
   }
 
   void goToNextExercise() {
     tts.stop();
+
+    // ✅ If it's a single exercise, just pop
     if (widget.isSingle) {
-      // 👇 If single exercise, just return to previous screen
       Navigator.pop(context);
       return;
     }
 
+    // ✅ If more exercises left, go to RestScreen
     if (currentIndex + 1 < widget.exercises.length) {
       Navigator.pushReplacement(
         context,
@@ -68,17 +70,14 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
         ),
       );
     } else {
+      // ✅ End of workout — show dialog
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Column(
-            children: [
-              const Text(
-                "🎉 Congratulations!",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
+          title: const Text(
+            "🎉 Congratulations!",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: const Text("You’ve completed today’s exercise."),
           actions: [
@@ -100,7 +99,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
 
   @override
   void dispose() {
-    tts.stop(); // ✅ Stop voice when screen closes
+    tts.stop();
     super.dispose();
   }
 
@@ -140,19 +139,18 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
               ),
               child: Column(
                 children: [
-                  Text(
+                  const SizedBox(height: 24),
+                  const Text(
                     "READY TO GO!",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(
-                    height: 25,
-                  ),
-                  // 🔹 Exercise Name
+                  const SizedBox(height: 25),
+
                   Text(
                     exercise.name,
                     style: const TextStyle(
@@ -188,7 +186,8 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                                   width: 140,
                                   height: 140,
                                   child: CircularProgressIndicator(
-                                    value: value / exercise.durationInSeconds,
+                                    value: value /
+                                        exercise.durationInSeconds.toDouble(),
                                     strokeWidth: 10,
                                     backgroundColor: Colors.grey[300],
                                     color: Colors.redAccent,
@@ -206,9 +205,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                             );
                           },
                         ),
-                  const SizedBox(
-                    height: 40,
-                  ),
+                  const SizedBox(height: 40),
 
                   // 🔹 Done Button
                   SizedBox(

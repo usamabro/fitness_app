@@ -84,7 +84,7 @@ class ExerciseListScreen extends StatelessWidget {
                             builder: (_) => ExercisePlayerScreen(
                               exercises: [exercise], // only one exercise
                               startIndex: 0,
-                              isSingle: true,
+                              isSingle: false,
                             ),
                           ),
                         );
@@ -148,7 +148,7 @@ class ExerciseListScreen extends StatelessWidget {
                     builder: (_) => ExercisePlayerScreen(
                       exercises: exercises,
                       startIndex: 0,
-                      isSingle: true,
+                      isSingle: false,
                     ),
                   ),
                 );
