@@ -8,11 +8,13 @@ import 'exercise_player_screen.dart';
 class RestScreen extends StatefulWidget {
   final List<ExerciseModel> exercises;
   final int currentIndex;
+  final bool isSingle;
 
   const RestScreen({
     super.key,
     required this.exercises,
     required this.currentIndex,
+    required this.isSingle,
   });
 
   @override
@@ -69,7 +71,7 @@ class _RestScreenState extends State<RestScreen> {
         builder: (_) => ExercisePlayerScreen(
           exercises: widget.exercises,
           startIndex: widget.currentIndex + 1,
-          isSingle: false, // ✅ go to next
+          isSingle: widget.isSingle, // ✅ go to next
         ),
       ),
     );

@@ -66,6 +66,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
           builder: (_) => RestScreen(
             exercises: widget.exercises,
             currentIndex: currentIndex,
+            isSingle: false,
           ),
         ),
       );

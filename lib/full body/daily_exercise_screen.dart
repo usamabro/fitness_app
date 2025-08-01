@@ -86,7 +86,7 @@ class DailyExerciseScreen extends StatelessWidget {
                             builder: (_) => ExercisePlayerScreen(
                               exercises: [exercise], // Only one exercise
                               startIndex: 0,
-                              isSingle: false,
+                              isSingle: true,
                             ),
                           ),
                         );
