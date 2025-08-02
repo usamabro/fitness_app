@@ -87,6 +87,7 @@ class DailyExerciseScreen extends StatelessWidget {
                               exercises: [exercise], // Only one exercise
                               startIndex: 0,
                               isSingle: true,
+                              section: "Full Body Exercise",
                             ),
                           ),
                         );
@@ -160,6 +161,7 @@ class DailyExerciseScreen extends StatelessWidget {
                       exercises: exercises,
                       startIndex: 0,
                       isSingle: false,
+                      section: "Full Body Section",
                     ),
                   ),
                 );

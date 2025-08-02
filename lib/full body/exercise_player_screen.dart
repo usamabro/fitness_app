@@ -4,17 +4,23 @@ import 'package:lottie/lottie.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'exercise_model.dart';
 import 'rest_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ExercisePlayerScreen extends StatefulWidget {
   final List<ExerciseModel> exercises;
   final int startIndex;
   final bool isSingle;
+  final String section;
+
+  // ✅ New: Section name
 
   const ExercisePlayerScreen({
     super.key,
     required this.exercises,
     required this.startIndex,
     required this.isSingle,
+    required this.section,
   });
 
   @override
@@ -31,9 +37,19 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     super.initState();
     currentIndex = widget.startIndex;
     showReps = widget.exercises[currentIndex].durationInSeconds == 0;
+
+    _ensureUserSignedIn();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _speakInstruction(widget.exercises[currentIndex]);
     });
+  }
+
+  Future<void> _ensureUserSignedIn() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      await FirebaseAuth.instance.signInAnonymously();
+      print("✅ Signed in anonymously");
+    }
   }
 
   void _speakInstruction(ExerciseModel exercise) async {
@@ -49,16 +65,54 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     await tts.speak(message);
   }
 
+  // ✅ Updated: Save with name, section, and time
+  Future<void> saveExerciseToFirebase() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print("❌ User is not signed in.");
+        return;
+      }
+
+      final uid = user.uid;
+      final exercise = widget.exercises[currentIndex];
+      final int duration =
+          exercise.durationInSeconds > 0 ? exercise.durationInSeconds : 40;
+
+      print("🔥 Saving exercise to Firebase...");
+      print("📝 Name: ${exercise.name}");
+
+      print("⏱️ Duration: $duration sec");
+      print("👤 UID: $uid");
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('completedExercises')
+          .doc(widget.section)
+          .collection('exercises')
+          .add({
+        'exerciseName': exercise.name,
+        'duration': duration,
+        'section': widget.section,
+        'timestamp': Timestamp.now(),
+        'uid': uid,
+      });
+
+      print("✅ Exercise saved to Firebase.");
+    } catch (e) {
+      print("❌ Error saving exercise: $e");
+    }
+  }
+
   void goToNextExercise() {
     tts.stop();
 
-    // ✅ If it's a single exercise, just pop
     if (widget.isSingle) {
       Navigator.pop(context);
       return;
     }
 
-    // ✅ If more exercises left, go to RestScreen
     if (currentIndex + 1 < widget.exercises.length) {
       Navigator.pushReplacement(
         context,
@@ -67,19 +121,16 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
             exercises: widget.exercises,
             currentIndex: currentIndex,
             isSingle: false,
+            section: widget.section,
           ),
         ),
       );
     } else {
-      // ✅ End of workout — show dialog
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text(
-            "🎉 Congratulations!",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          title: const Text("🎉 Congratulations!"),
           content: const Text("You’ve completed today’s exercise."),
           actions: [
             TextButton(
@@ -89,8 +140,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                   MaterialPageRoute(builder: (context) => Navbar()),
                 );
               },
-              child: const Text("OK",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text("OK"),
             ),
           ],
         ),
@@ -111,67 +161,42 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // 🔺 Top Half - White with centered animation/image
           Container(
             height: MediaQuery.of(context).size.height * 0.45,
             width: double.infinity,
             color: Colors.grey.shade100,
             child: Center(
               child: exercise.isAnimation
-                  ? Lottie.asset(
-                      exercise.filePath,
-                      width: 200,
-                      height: 200,
-                    )
-                  : Image.asset(
-                      exercise.filePath,
-                      width: 200,
-                      height: 200,
-                    ),
+                  ? Lottie.asset(exercise.filePath, width: 200, height: 200)
+                  : Image.asset(exercise.filePath, width: 200, height: 200),
             ),
           ),
-
-          // 🔻 Bottom Half
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 0),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
                 children: [
                   const SizedBox(height: 24),
                   const Text(
                     "READY TO GO!",
                     style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 25),
-
                   Text(
                     exercise.name,
                     style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                        fontSize: 26, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 25),
-
-                  // 🔹 Timer or Reps
                   showReps
-                      ? Text(
-                          exercise.time,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            color: Colors.grey,
-                          ),
-                        )
+                      ? Text(exercise.time,
+                          style:
+                              const TextStyle(fontSize: 22, color: Colors.grey))
                       : TweenAnimationBuilder(
                           tween: Tween<double>(
                               begin: exercise.durationInSeconds.toDouble(),
@@ -187,8 +212,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                                   width: 140,
                                   height: 140,
                                   child: CircularProgressIndicator(
-                                    value: value /
-                                        exercise.durationInSeconds.toDouble(),
+                                    value: value / exercise.durationInSeconds,
                                     strokeWidth: 10,
                                     backgroundColor: Colors.grey[300],
                                     color: Colors.redAccent,
@@ -199,7 +223,6 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                                   style: const TextStyle(
                                     fontSize: 36,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
                                   ),
                                 ),
                               ],
@@ -207,12 +230,13 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                           },
                         ),
                   const SizedBox(height: 40),
-
-                  // 🔹 Done Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: goToNextExercise,
+                      onPressed: () async {
+                        await saveExerciseToFirebase();
+                        goToNextExercise();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -223,10 +247,7 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                       child: const Text(
                         "Done",
                         style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                            fontSize: 22, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),

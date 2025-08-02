@@ -85,6 +85,7 @@ class ExerciseListScreen extends StatelessWidget {
                               exercises: [exercise], // only one exercise
                               startIndex: 0,
                               isSingle: true,
+                              section: "Body Parts",
                             ),
                           ),
                         );
@@ -149,6 +150,7 @@ class ExerciseListScreen extends StatelessWidget {
                       exercises: exercises,
                       startIndex: 0,
                       isSingle: false,
+                      section: "Body parts",
                     ),
                   ),
                 );

@@ -9,12 +9,14 @@ class RestScreen extends StatefulWidget {
   final List<ExerciseModel> exercises;
   final int currentIndex;
   final bool isSingle;
+  final String section;
 
   const RestScreen({
     super.key,
     required this.exercises,
     required this.currentIndex,
     required this.isSingle,
+    required this.section,
   });
 
   @override
@@ -71,7 +73,9 @@ class _RestScreenState extends State<RestScreen> {
         builder: (_) => ExercisePlayerScreen(
           exercises: widget.exercises,
           startIndex: widget.currentIndex + 1,
-          isSingle: widget.isSingle, // ✅ go to next
+          isSingle: widget.isSingle,
+          section: widget.section,
+          // ✅ go to next
         ),
       ),
     );

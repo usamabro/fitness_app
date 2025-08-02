@@ -73,6 +73,7 @@ class WarmupScreen extends StatelessWidget {
                               exercises: [exercise], // Only one exercise
                               startIndex: 0,
                               isSingle: true,
+                              section: 'Cool Down',
                             ),
                           ),
                         );
@@ -145,6 +146,7 @@ class WarmupScreen extends StatelessWidget {
                       exercises: exercises,
                       startIndex: 0,
                       isSingle: false,
+                      section: 'Cool Down',
                     ),
                   ),
                 );
