@@ -13,8 +13,6 @@ class ExercisePlayerScreen extends StatefulWidget {
   final bool isSingle;
   final String section;
 
-  // ✅ New: Section name
-
   const ExercisePlayerScreen({
     super.key,
     required this.exercises,
@@ -65,7 +63,6 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     await tts.speak(message);
   }
 
-  // ✅ Updated: Save with name, section, and time
   Future<void> saveExerciseToFirebase() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -81,7 +78,6 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
 
       print("🔥 Saving exercise to Firebase...");
       print("📝 Name: ${exercise.name}");
-
       print("⏱️ Duration: $duration sec");
       print("👤 UID: $uid");
 
@@ -99,9 +95,71 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
         'uid': uid,
       });
 
+      await updateDailyReport(exercise, duration);
+
       print("✅ Exercise saved to Firebase.");
     } catch (e) {
       print("❌ Error saving exercise: $e");
+    }
+  }
+
+  Future<void> updateDailyReport(ExerciseModel exercise, int duration) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final uid = user.uid;
+    final now = DateTime.now();
+    final today =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('daily_reports')
+        .doc(today);
+
+    final reportSnapshot = await docRef.get();
+
+    final kcal = (duration * 0.15).toInt();
+    final newExerciseData = {
+      'name': exercise.name,
+      'duration': duration,
+      'kcal': kcal,
+      'timestamp': now.toIso8601String(),
+    };
+
+    if (reportSnapshot.exists) {
+      final data = reportSnapshot.data()!;
+      final updatedTime = (data['totalTime'] ?? 0) + duration;
+      final updatedKcal = (data['totalKcal'] ?? 0) + kcal;
+      final updatedWorkouts = (data['workouts'] ?? 0) + 1;
+
+      List<dynamic> completed = List.from(data['completedExercises'] ?? []);
+      bool alreadyAdded = completed.any((e) => e['name'] == exercise.name);
+      if (!alreadyAdded) {
+        completed.add(newExerciseData);
+      }
+
+      await docRef.update({
+        'totalTime': updatedTime,
+        'totalKcal': updatedKcal,
+        'workouts': updatedWorkouts,
+        'completedExercises': completed,
+      });
+
+      print("✅ Daily report updated for $today");
+    } else {
+      await docRef.set({
+        'date': today,
+        'totalTime': duration,
+        'totalKcal': kcal,
+        'workouts': 1,
+        'dailyStreak': 1,
+        'bestDayKcal': kcal,
+        'completedExercises': [newExerciseData],
+      });
+
+      print("✅ Daily report updated for $today");
     }
   }
 

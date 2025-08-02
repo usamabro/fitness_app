@@ -1,8 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ReportScreen extends StatelessWidget {
+class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
+
+  @override
+  State<ReportScreen> createState() => _ReportScreenState();
+}
+
+class _ReportScreenState extends State<ReportScreen> {
+  int workouts = 0;
+  int kcal = 0;
+  int minutes = 0; // This is actually total seconds
+  int streak = 0;
+  int bestDay = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchReportData();
+  }
+
+  Future<void> fetchReportData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final uid = user.uid;
+    final now = DateTime.now();
+    final today =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('daily_reports')
+        .doc(today)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        workouts = data['workouts'] ?? 0;
+        kcal = data['totalKcal'] ?? 0;
+        minutes = data['totalTime'] ?? 0; // this is in seconds
+        streak = data['dailyStreak'] ?? 0;
+        bestDay = data['bestDayKcal'] ?? 0;
+      });
+    }
+  }
+
+  String formatTime(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +83,9 @@ class ReportScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _reportCard("Workouts", "12", Colors.deepPurple),
-                      _reportCard("Kcal", "340", Colors.orange),
-                      _reportCard("Minutes", "96", Colors.green),
+                      _reportCard("Workouts", "$workouts", Colors.deepPurple),
+                      _reportCard("Kcal", "$kcal", Colors.orange),
+                      _reportCard("Time", formatTime(minutes), Colors.green),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -80,8 +133,9 @@ class ReportScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _smallInfoCard("Day Streak", "5 🔥", Colors.blue),
-                      _smallInfoCard("Best", "9 Days 🏆", Colors.redAccent),
+                      _smallInfoCard("Day Streak", "$streak 🔥", Colors.blue),
+                      _smallInfoCard(
+                          "Best", "$bestDay Kcal 🏆", Colors.redAccent),
                     ],
                   ),
                   const SizedBox(height: 30),
