@@ -42,6 +42,59 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
       _speakInstruction(widget.exercises[currentIndex]);
     });
   }
+  Future<void> markDayAsCompleted() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final uid = user.uid;
+
+  // Get current day number from "Day 1", "Day 2" etc.
+  final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+int currentDay = userDoc.data()?['currentDay'] ?? 1;
+  int nextDay = currentDay + 1;
+  if (nextDay > 28) nextDay = 1;
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .set({
+    'currentDay': nextDay, // 🔥 always store NEXT active day
+  }, SetOptions(merge: true));
+
+  print("✅ Day $currentDay completed, now Day $nextDay is active!");
+}
+Future<void> updateWeeklyGoal() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final uid = user.uid;
+  final now = DateTime.now();
+  final today = "${now.year}-${now.month}-${now.day}";
+
+  final docRef = FirebaseFirestore.instance.collection('users').doc(uid);
+  final doc = await docRef.get();
+
+  if (doc.exists) {
+    final data = doc.data();
+    final List<dynamic> completedDates = data?['weekly_goal_completed_dates'] ?? [];
+
+    // ✅ Only update if today not already counted
+    if (!completedDates.contains(today)) {
+      await docRef.set({
+        'weekly_goal': (data?['weekly_goal'] ?? 0) + 1,
+        'weekly_goal_completed_dates': FieldValue.arrayUnion([today]),
+      }, SetOptions(merge: true));
+
+      print("✅ Weekly goal updated for $today");
+    } else {
+      print("ℹ️ Weekly goal already counted today");
+    }
+  }
+}
+
+
+ 
+
 
   Future<void> _ensureUserSignedIn() async {
     if (FirebaseAuth.instance.currentUser == null) {
@@ -163,8 +216,9 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
     }
   }
 
-  void goToNextExercise() {
+  void goToNextExercise() async{
     tts.stop();
+     await saveExerciseToFirebase();
 
     if (widget.isSingle) {
       Navigator.pop(context);
@@ -184,6 +238,8 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
         ),
       );
     } else {
+       markDayAsCompleted();
+       updateWeeklyGoal();
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -288,27 +344,25 @@ class _ExercisePlayerScreenState extends State<ExercisePlayerScreen> {
                           },
                         ),
                   const SizedBox(height: 40),
+                  if (showReps)
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await saveExerciseToFirebase();
-                        goToNextExercise();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Done",
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
+                    child: ElevatedButton(onPressed:()async {
+                      await saveExerciseToFirebase();
+                      goToNextExercise();
+                      
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      )
+                    ), child: Text('Done',style: TextStyle(fontSize: 22,fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    ),),),
+                  )
+                  
                 ],
               ),
             ),

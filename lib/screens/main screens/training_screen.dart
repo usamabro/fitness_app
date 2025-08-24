@@ -19,118 +19,97 @@ class _TrainingScreenState extends State<TrainingScreen> {
     "Abs": [
       {
         "title": "Abs Beginner",
-        "duration": "20 mins",
-        "exercises": "16 Exercises",
-        "image": "assets/images/abs.png",
+        "duration": "8 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/abss.png",
         "difficulty": 1,
       },
       {
         "title": "Abs Intermediate",
-        "duration": "29 mins",
-        "exercises": "21 Exercises",
-        "image": "assets/images/abs_intar.png",
+        "duration": "12 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/abss.png",
         "difficulty": 2,
       },
       {
         "title": "Abs Advanced",
-        "duration": "36 mins",
-        "exercises": "21 Exercises",
-        "image": "assets/images/abs_advan.png",
+        "duration": "14 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/abss.png",
         "difficulty": 3,
       },
     ],
     "Arm": [
       {
         "title": "Arm Beginner",
-        "duration": "15 mins",
+        "duration": "08 mins",
         "exercises": "10 Exercises",
-        "image": "assets/images/men.png",
+        "image": "assets/images/arm.png",
         "difficulty": 1,
       },
       {
         "title": "Arm Intermediate",
-        "duration": "25 mins",
+        "duration": "10 mins",
         "exercises": "18 Exercises",
-        "image": "assets/images/men.png",
+        "image": "assets/images/arm.png",
         "difficulty": 2,
       },
       {
         "title": "Arm Advanced",
-        "duration": "25 mins",
+        "duration": "14 mins",
         "exercises": "18 Exercises",
-        "image": "assets/images/men.png",
+        "image": "assets/images/arm.png",
         "difficulty": 2,
       },
     ],
     "Chest": [
       {
         "title": "Chest Beginner",
-        "duration": "18 mins",
-        "exercises": "12 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "10 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/chest.png",
         "difficulty": 1,
       },
       {
         "title": "Chest Intermediate",
-        "duration": "18 mins",
-        "exercises": "12 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "12 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/chest.png",
         "difficulty": 1,
       },
       {
         "title": "Chest Advanced",
-        "duration": "18 mins",
-        "exercises": "12 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "15 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/chest.png",
         "difficulty": 1,
       },
     ],
     "Leg": [
       {
         "title": "Leg Beginner",
-        "duration": "30 mins",
-        "exercises": "20 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "10 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/legs.png",
         "difficulty": 2,
       },
       {
         "title": "Leg Intermediate",
-        "duration": "30 mins",
-        "exercises": "20 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "12 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/legs.png",
         "difficulty": 2,
       },
       {
         "title": "Leg Advanced",
-        "duration": "30 mins",
-        "exercises": "20 Exercises",
-        "image": "assets/images/men.png",
+        "duration": "15 mins",
+        "exercises": "08 Exercises",
+        "image": "assets/images/legs.png",
         "difficulty": 2,
       },
     ],
-    "Shoulder": [
-      {
-        "title": "  Shoulder Beginner ",
-        "duration": "22 mins",
-        "exercises": "14 Exercises",
-        "image": "assets/images/men.png",
-        "difficulty": 2,
-      },
-      {
-        "title": "Shoulder  Intermediate",
-        "duration": "22 mins",
-        "exercises": "14 Exercises",
-        "image": "assets/images/men.png",
-        "difficulty": 2,
-      },
-      {
-        "title": "Shoulder Advanced",
-        "duration": "22 mins",
-        "exercises": "14 Exercises",
-        "image": "assets/images/men.png",
-        "difficulty": 2,
-      },
-    ],
+ 
+    
   };
 
   String selectedFocus = "Abs";
@@ -143,6 +122,30 @@ class _TrainingScreenState extends State<TrainingScreen> {
     super.initState();
     loadWeeklyGoal();
   }
+  Future<void> updateWeeklyGoal() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return;
+
+  final today = DateTime.now();
+  final todayStr = "${today.year}-${today.month}-${today.day}"; // e.g. 2025-08-23
+
+  final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
+  final doc = await userDoc.get();
+
+  if (doc.exists) {
+    final data = doc.data();
+    final List<dynamic> completedDates = data?['weekly_goal_completed_dates'] ?? [];
+
+    // Only update if today not already counted
+    if (!completedDates.contains(todayStr)) {
+      await userDoc.update({
+        'weekly_goal': (data?['weekly_goal'] ?? 0) + 1,
+        'weekly_goal_completed_dates': FieldValue.arrayUnion([todayStr]),
+      });
+    }
+  }
+}
+
 
   void loadWeeklyGoal() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -247,7 +250,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         CircleAvatar(
                             radius: 20,
                             backgroundImage:
-                                AssetImage('assets/images/google.png')),
+                                AssetImage('assets/images/trainers.png')),
                         SizedBox(width: 10),
                         Expanded(
                             child: Text(
@@ -388,10 +391,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
       "Arm",
       "Chest",
       "Leg",
-      "Shoulder",
-    ];
+       ];
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+   
       child: Row(
         children: focus.map((item) {
           final isActive = item == selectedFocus;
@@ -403,9 +405,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
               });
             },
             child: Container(
-              margin: EdgeInsets.only(right: 8),
+              margin: EdgeInsets.only(right: 16),
               child: Chip(
-                label: Text(item),
+                label: Text(item,style: TextStyle(fontSize: 20,),),
                 backgroundColor: isActive ? primary : Colors.grey.shade200,
                 labelStyle:
                     TextStyle(color: isActive ? Colors.white : Colors.black),

@@ -1,4 +1,3 @@
-import 'package:fitness_app/screens/main%20screens/navbar.dart';
 import 'package:fitness_app/screens/splash/splash_screen.dart';
 
 import 'package:flutter/material.dart';

@@ -1,7 +1,8 @@
-// ✅ No UI changes - just logic and clarification added
-
 import 'package:fitness_app/full%20body/daily_exercise_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class FullBodyExerciseScreen extends StatefulWidget {
   const FullBodyExerciseScreen({Key? key}) : super(key: key);
@@ -11,11 +12,62 @@ class FullBodyExerciseScreen extends StatefulWidget {
 }
 
 class _FullBodyExerciseScreenState extends State<FullBodyExerciseScreen> {
-  int completedDays = 0;
   int? selectedDay;
+
+  int completedDays = 0; // 🔥 Added missing variable
 
   int get totalDays => 28;
   double get progress => completedDays / totalDays;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCompletedDays(); // 🔥 Load Firebase progress
+  }
+  Future<void> markDayComplete(int dayNumber) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  String today = DateFormat('yyyy-MM-dd').format(DateTime.now()); // e.g. 2025-08-23
+
+  final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+  // Save completed day
+  await userRef.collection('completedDays').doc(dayNumber.toString()).set({
+    'day': dayNumber,
+    'completedAt': FieldValue.serverTimestamp(),
+  });
+
+  // Check if today's date already counted for weekly goal
+  final weeklyRef = userRef.collection('weeklyGoals').doc(today);
+  final snapshot = await weeklyRef.get();
+
+  if (!snapshot.exists) {
+    // only add once per day
+    await weeklyRef.set({
+      'date': today,
+      'counted': true,
+    });
+  }
+}
+
+
+  Future<void> _loadCompletedDays() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .get();
+
+  setState(() {
+    int activeDay = doc.data()?['currentDay'] ?? 1;
+completedDays = activeDay - 1;
+   
+  });
+}
+
 
   void _startDayWorkout() {
     int dayToStart = selectedDay ?? completedDays + 1;
@@ -25,17 +77,19 @@ class _FullBodyExerciseScreenState extends State<FullBodyExerciseScreen> {
       MaterialPageRoute(
         builder: (context) => DailyExerciseScreen(
           dayKey: "Day $dayToStart",
-          onComplete: () {
+          onComplete: () async {
+           
+
+            // Reload progress
+            await _loadCompletedDays();
+
             setState(() {
-              if (!selectedDayProvidedAlreadyCompleted(dayToStart)) {
-                completedDays =
-                    completedDays < dayToStart ? dayToStart : completedDays;
-              }
-              selectedDay = null; // Reset selected day
+              selectedDay = null;
             });
           },
         ),
       ),
+    
     );
   }
 
@@ -114,7 +168,8 @@ class _FullBodyExerciseScreenState extends State<FullBodyExerciseScreen> {
                       child: Row(
                         children: [
                           const CircleAvatar(
-                            backgroundImage: AssetImage('assets/trainer.png'),
+                            backgroundImage:
+                                AssetImage('assets/images/trainers.png'),
                             radius: 25,
                           ),
                           const SizedBox(width: 12),
@@ -218,10 +273,8 @@ class _FullBodyExerciseScreenState extends State<FullBodyExerciseScreen> {
               int dayBottom = startDay + 4 + i;
 
               Widget buildDayCircle(int day) {
-                bool isCompleted = completedDays >= day;
-                bool isCurrent = day == completedDays + 1 &&
-                    completedDays >= startDay - 1 &&
-                    completedDays < endDay;
+                bool isCompleted = day <= completedDays;
+                bool isCurrent   = day == completedDays + 1;
 
                 return GestureDetector(
                   onTap: () {

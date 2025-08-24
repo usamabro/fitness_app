@@ -44,10 +44,16 @@ class _ChatScreenState extends State<ChatScreen> {
   String generateChatId(String uid1, String uid2) {
     return (uid1.compareTo(uid2) <= 0) ? '${uid1}_$uid2' : '${uid2}_$uid1';
   }
+  bool msg = false;
 
   void sendMessage() async {
     String message = _messageController.text.trim();
+    setState(() {
+      _messageController.text='';
+    });
+    
     if (message.isEmpty || currentUserId == null) return;
+   
 
     try {
       List<String> sortedUsers = [currentUserId!, widget.peerId]..sort();
